@@ -663,3 +663,307 @@ lightboxStyles.textContent = `
 
 document.head.appendChild(lightboxStyles);
 
+
+
+// ===== ENHANCED PORTFOLIO INTERACTIONS =====
+
+document.addEventListener('DOMContentLoaded', function() {
+    
+    // ===== PROGRESS BAR FOR SALES APPROACH =====
+    const progressBar = document.querySelector('.progress-fill');
+    const approachItems = document.querySelectorAll('.approach-item');
+    
+    if (progressBar && approachItems.length > 0) {
+        const updateProgressBar = () => {
+            const scrollTop = window.pageYOffset;
+            const approachSection = document.querySelector('.sales-approach');
+            
+            if (approachSection) {
+                const sectionTop = approachSection.offsetTop;
+                const sectionHeight = approachSection.offsetHeight;
+                const windowHeight = window.innerHeight;
+                
+                if (scrollTop >= sectionTop - windowHeight / 2 && scrollTop <= sectionTop + sectionHeight) {
+                    const progress = Math.min(100, Math.max(0, 
+                        ((scrollTop - sectionTop + windowHeight / 2) / sectionHeight) * 100
+                    ));
+                    progressBar.style.width = progress + '%';
+                }
+            }
+        };
+        
+        window.addEventListener('scroll', throttle(updateProgressBar, 16));
+    }
+    
+    // ===== TECH TOOL HOVER EFFECTS =====
+    const techTools = document.querySelectorAll('.tech-tool');
+    
+    techTools.forEach(tool => {
+        tool.addEventListener('mouseenter', function() {
+            const toolName = this.dataset.tool;
+            if (toolName) {
+                // Create tooltip
+                const tooltip = document.createElement('div');
+                tooltip.className = 'tech-tooltip';
+                tooltip.textContent = `Experience with ${toolName}`;
+                tooltip.style.cssText = `
+                    position: absolute;
+                    background: var(--text);
+                    color: var(--brand-contrast);
+                    padding: 8px 12px;
+                    border-radius: 4px;
+                    font-size: 12px;
+                    white-space: nowrap;
+                    z-index: 1000;
+                    pointer-events: none;
+                    transform: translateY(-100%);
+                    margin-top: -8px;
+                `;
+                
+                this.style.position = 'relative';
+                this.appendChild(tooltip);
+                
+                // Position tooltip
+                const rect = this.getBoundingClientRect();
+                tooltip.style.left = '50%';
+                tooltip.style.transform = 'translateX(-50%) translateY(-100%)';
+            }
+        });
+        
+        tool.addEventListener('mouseleave', function() {
+            const tooltip = this.querySelector('.tech-tooltip');
+            if (tooltip) {
+                tooltip.remove();
+            }
+        });
+    });
+    
+    // ===== KPI BARS ANIMATION =====
+    const kpiBars = document.querySelectorAll('.kpi-fill');
+    
+    const animateKPIBars = () => {
+        kpiBars.forEach(bar => {
+            const targetWidth = bar.style.width;
+            bar.style.width = '0%';
+            
+            setTimeout(() => {
+                bar.style.width = targetWidth;
+            }, 500);
+        });
+    };
+    
+    // Trigger KPI animation when section is visible
+    const kpiSection = document.querySelector('.kpis');
+    if (kpiSection) {
+        const kpiObserver = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    animateKPIBars();
+                    kpiObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.3 });
+        
+        kpiObserver.observe(kpiSection);
+    }
+    
+    // ===== TIMELINE ITEMS STAGGERED ANIMATION =====
+    const timelineItems = document.querySelectorAll('.timeline-item');
+    
+    const timelineObserver = new IntersectionObserver(function(entries) {
+        entries.forEach((entry, index) => {
+            if (entry.isIntersecting) {
+                setTimeout(() => {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }, index * 200);
+                timelineObserver.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.2 });
+    
+    timelineItems.forEach(item => {
+        item.style.opacity = '0';
+        item.style.transform = 'translateY(30px)';
+        item.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out';
+        timelineObserver.observe(item);
+    });
+    
+    // ===== TARGET CARDS HOVER EFFECTS =====
+    const targetCards = document.querySelectorAll('.target-card, .motivator-card');
+    
+    targetCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-8px) scale(1.02)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0) scale(1)';
+        });
+    });
+    
+    // ===== APPROACH ITEMS CLICK TO EXPAND =====
+    const approachItemsClickable = document.querySelectorAll('.approach-item');
+    
+    approachItemsClickable.forEach(item => {
+        item.style.cursor = 'pointer';
+        
+        item.addEventListener('click', function() {
+            const content = this.querySelector('.step-content p');
+            const isExpanded = this.classList.contains('expanded');
+            
+            if (isExpanded) {
+                this.classList.remove('expanded');
+                content.style.maxHeight = '4.5em';
+                content.style.overflow = 'hidden';
+            } else {
+                this.classList.add('expanded');
+                content.style.maxHeight = 'none';
+                content.style.overflow = 'visible';
+            }
+        });
+        
+        // Initialize collapsed state for long content
+        const content = item.querySelector('.step-content p');
+        if (content && content.textContent.length > 200) {
+            content.style.maxHeight = '4.5em';
+            content.style.overflow = 'hidden';
+            content.style.position = 'relative';
+            
+            // Add expand indicator
+            const expandIndicator = document.createElement('span');
+            expandIndicator.textContent = '... (click to expand)';
+            expandIndicator.style.cssText = `
+                color: var(--brand);
+                font-weight: 600;
+                cursor: pointer;
+                font-size: 0.9em;
+            `;
+            content.appendChild(expandIndicator);
+        }
+    });
+    
+    // ===== ENHANCED CTA BUTTONS =====
+    const ctaButtons = document.querySelectorAll('.btn');
+    
+    ctaButtons.forEach(btn => {
+        btn.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px) scale(1.05)';
+        });
+        
+        btn.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0) scale(1)';
+        });
+        
+        btn.addEventListener('click', function(e) {
+            // Add ripple effect
+            const ripple = document.createElement('span');
+            const rect = this.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            const x = e.clientX - rect.left - size / 2;
+            const y = e.clientY - rect.top - size / 2;
+            
+            ripple.style.cssText = `
+                position: absolute;
+                width: ${size}px;
+                height: ${size}px;
+                left: ${x}px;
+                top: ${y}px;
+                background: rgba(255, 255, 255, 0.3);
+                border-radius: 50%;
+                transform: scale(0);
+                animation: ripple 0.6s linear;
+                pointer-events: none;
+            `;
+            
+            this.style.position = 'relative';
+            this.style.overflow = 'hidden';
+            this.appendChild(ripple);
+            
+            setTimeout(() => ripple.remove(), 600);
+        });
+    });
+    
+    // ===== SKILL BADGE ANIMATIONS =====
+    const skillBadges = document.querySelectorAll('.skill-badge');
+    
+    skillBadges.forEach(badge => {
+        badge.addEventListener('mouseenter', function() {
+            const icon = this.querySelector('.skill-icon');
+            if (icon) {
+                icon.style.transform = 'rotate(360deg) scale(1.2)';
+                icon.style.transition = 'transform 0.5s ease';
+            }
+        });
+        
+        badge.addEventListener('mouseleave', function() {
+            const icon = this.querySelector('.skill-icon');
+            if (icon) {
+                icon.style.transform = 'rotate(0deg) scale(1)';
+            }
+        });
+    });
+    
+    // ===== PERFORMANCE OPTIMIZATIONS =====
+    
+    // Lazy load animations
+    const lazyAnimationElements = document.querySelectorAll('.target-card, .motivator-card, .tech-tool');
+    
+    const lazyAnimationObserver = new IntersectionObserver(function(entries) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.animation = 'fadeInUp 0.6s ease-out';
+                lazyAnimationObserver.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.1 });
+    
+    lazyAnimationElements.forEach(el => {
+        lazyAnimationObserver.observe(el);
+    });
+    
+    // Debounced resize handler
+    let resizeTimeout;
+    window.addEventListener('resize', function() {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(function() {
+            // Recalculate any position-dependent elements
+            const progressBar = document.querySelector('.progress-fill');
+            if (progressBar) {
+                updateProgressBar();
+            }
+        }, 250);
+    });
+});
+
+// ===== CSS ANIMATIONS =====
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes ripple {
+        to {
+            transform: scale(4);
+            opacity: 0;
+        }
+    }
+    
+    .approach-item.expanded {
+        background: linear-gradient(135deg, var(--surface) 0%, rgba(0, 87, 255, 0.05) 100%);
+    }
+    
+    .tech-tooltip {
+        animation: tooltipFadeIn 0.2s ease-out;
+    }
+    
+    @keyframes tooltipFadeIn {
+        from {
+            opacity: 0;
+            transform: translateX(-50%) translateY(-90%);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(-50%) translateY(-100%);
+        }
+    }
+`;
+document.head.appendChild(style);
+
